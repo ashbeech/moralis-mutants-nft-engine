@@ -1,6 +1,6 @@
 # Moralis Mutants NFT Collection | Generative Art Engine
 
-The survivors of Rekt City welcome you.
+🧟‍♀️🧟‍♂️ Welcome to Rekt City on behalf of its horribly mutated survivors. 🧟‍♀️🧟‍♂️
 
 ## About
 
@@ -20,9 +20,9 @@ npm install
 Go to [Moralis.io](https://moralis.io/) to create your server instance. Then in root `index.js` file, point to your Moralis server:
 
 ```sh
-const appId = "xxx";
-const serverUrl = "https://xxx.usemoralis.com:2053/server";
-const masterKey = "xxx";
+const appId = "YOUR_MORALIS_APP_ID";
+const serverUrl = "YOUR_MORALIS_SERVER_URL";
+const masterKey = "YOUR_MORALIS_MASTER_KEY"; // DO NOT DISPLAY IN PUBLIC DIR
 
 ```
 
