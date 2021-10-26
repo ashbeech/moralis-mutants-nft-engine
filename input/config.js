@@ -158,7 +158,7 @@ const layers = [
 
 // provide any specific percentages that are required for a given layer and rarity level
 // all provided options are used based on their percentage values to decide which layer to select from
-addRarityPercentForLayer("original", "eye color", {
+addRarityPercentForLayer("original", "Eyes", {
   super_rare: 0,
   rare: 0,
   original: 100,
