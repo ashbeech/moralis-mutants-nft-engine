@@ -4,7 +4,7 @@
 
 ## About
 
-Aim: Saving time and resources for artists and developers, allowing them to generate and host NFT art, across-chains (ETH/BSC/MATIC/…) in one place (utilising Moralis).
+Aim: Save time and resources for artists and developers by allowing them to generate and host NFT art, across blockchains, in one place (utilising Moralis).
 
 This initial tutorial video is a great introduction: [Link to Moralis YouTube Video](https://youtu.be/TBC).
 
