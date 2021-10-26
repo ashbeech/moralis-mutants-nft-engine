@@ -43,8 +43,6 @@ This injects the mutagen that will bring your Moralis mutants ALIVE!
 
 `canvas`: [ℹ️ Docs](https://www.npmjs.com/package/canvas)
 
-`react-final-form`: [ℹ️ Docs](https://final-form.org/docs/final-form/getting-started)
-
 ## Todos ✅
 
 - [ ] NFT contract allowing tokens to be minted and tranferred for Opensea.
