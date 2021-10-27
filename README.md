@@ -6,7 +6,7 @@
 
 Aim: Save time and resources for artists and developers by allowing them to generate and host NFT art, across blockchains, in one place (utilising Moralis).
 
-This initial tutorial video is a great introduction: [Link to Moralis YouTube Video](https://youtu.be/TBC).
+This initial tutorial video is a great introduction: [Link to Moralis YouTube Video](https://www.youtube.com/watch?v=KBV4FrCv4ps).
 
 ## Quick Launch 🚀
 
