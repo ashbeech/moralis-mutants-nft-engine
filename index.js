@@ -25,6 +25,7 @@ const appId = "YOUR_MORALIS_APP_ID";
 const serverUrl = "YOUR_MORALIS_SERVER_URL";
 const masterKey = "YOUR_MORALIS_MASTER_KEY"; // DO NOT DISPLAY IN PUBLIC DIR
 const xAPIKey = "YOUR_X_API_KEY"; // DO NOT DISPLAY IN PUBLIC DIR
+const api_url = "https://deep-index.moralis.io/api/v2/ipfs/uploadFolder";
 
 Moralis.start({ serverUrl, appId, masterKey });
 
@@ -273,17 +274,13 @@ const uploadMetadata = async (_cid) => {
   }
   Promise.all(promiseArray).then(() => {
     axios
-      .post(
-        "https://deep-index.moralis.io/api/v2/ipfs/uploadFolder",
-        ipfsArray,
-        {
-          headers: {
-            "X-API-Key": xAPIKey,
-            "content-type": "application/json",
-            accept: "application/json",
-          },
-        }
-      )
+      .post(api_url, ipfsArray, {
+        headers: {
+          "X-API-Key": xAPIKey,
+          "content-type": "application/json",
+          accept: "application/json",
+        },
+      })
       .then((res) => {
         meta_CID = res.data[0].path.split("/")[4];
         console.log("META FILE PATHS:", res.data);
@@ -420,17 +417,13 @@ const startCreating = async () => {
   }
   Promise.all(promiseArray).then(() => {
     axios
-      .post(
-        "https://deep-index.moralis.io/api/v2/ipfs/uploadFolder",
-        ipfsArray,
-        {
-          headers: {
-            "X-API-Key": xAPIKey,
-            "content-type": "application/json",
-            accept: "application/json",
-          },
-        }
-      )
+      .post(api_url, ipfsArray, {
+        headers: {
+          "X-API-Key": xAPIKey,
+          "content-type": "application/json",
+          accept: "application/json",
+        },
+      })
       .then((res) => {
         console.log("IMAGE FILE PATHS:", res.data);
         image_CID = res.data[0].path.split("/")[4];
