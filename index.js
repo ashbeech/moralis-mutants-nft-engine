@@ -1,4 +1,3 @@
-const fs = require("fs");
 // utilise Moralis
 const Moralis = require("moralis/node");
 // canvas for image compile
@@ -15,6 +14,9 @@ const {
   rarityWeights,
 } = require("./input/config.js");
 const console = require("console");
+const fs = require("fs");
+const request = require("request");
+const { default: axios } = require("axios");
 const canvas = createCanvas(width, height);
 const ctx = canvas.getContext("2d");
 
@@ -22,6 +24,7 @@ const ctx = canvas.getContext("2d");
 const appId = "YOUR_MORALIS_APP_ID";
 const serverUrl = "YOUR_MORALIS_SERVER_URL";
 const masterKey = "YOUR_MORALIS_MASTER_KEY"; // DO NOT DISPLAY IN PUBLIC DIR
+const xAPIKey = "YOUR_X_API_KEY"; // DO NOT DISPLAY IN PUBLIC DIR
 
 Moralis.start({ serverUrl, appId, masterKey });
 
@@ -156,7 +159,7 @@ const createDna = (_layers, _rarity) => {
 
 // holds which rarity should be used for which image in edition
 let rarityForEdition;
-let filePath = null;
+
 // get the rarity for the image by edition number that should be generated
 const getRarity = (_editionCount) => {
   if (!rarityForEdition) {
@@ -179,6 +182,119 @@ const writeMetaData = (_data) => {
 let dnaListByRarity = {};
 // holds metadata for all NFTs
 let metadataList = [];
+// image data collection
+const imageDataArray = [];
+let image_CID = "";
+let meta_CID = "";
+let ipfsArray = [];
+// array of promises so that only if finished, will next promise be initiated
+let promiseArray = [];
+
+const saveToServer = async (_meta_hash, _image_hash) => {
+  for (let i = 1; i < editionSize + 1; i++) {
+    let id = i.toString();
+    let paddedHex = (
+      "0000000000000000000000000000000000000000000000000000000000000000" + id
+    ).slice(-64);
+    let url = `https://ipfs.moralis.io:2053/ipfs/${_meta_hash}/metadata/${paddedHex}.json`;
+    let options = { json: true };
+    request(url, options, (error, res, body) => {
+      if (error) {
+        return console.log(error);
+      }
+
+      if (!error && res.statusCode == 200) {
+        // Save file reference to Moralis
+        const FileDatabase = new Moralis.Object("Metadata");
+        FileDatabase.set("edition", body.edition);
+        FileDatabase.set("name", body.name);
+        FileDatabase.set("dna", body.dna);
+        FileDatabase.set("image", body.image);
+        FileDatabase.set("attributes", body.attributes);
+        FileDatabase.set("meta_hash", _meta_hash);
+        FileDatabase.set("image_hash", _image_hash);
+        FileDatabase.save();
+      }
+    });
+  }
+};
+
+// upload metadata
+const uploadMetadata = async (_cid) => {
+  ipfsArray = [];
+  promiseArray = [];
+
+  for (let i = 1; i < editionSize + 1; i++) {
+    let id = i.toString();
+    let paddedHex = (
+      "0000000000000000000000000000000000000000000000000000000000000000" + id
+    ).slice(-64);
+    let filename = i.toString() + ".json";
+
+    let filetype = "base64";
+    imageDataArray[
+      i
+    ].filePath = `https://ipfs.moralis.io:2053/ipfs/${_cid}/images/${paddedHex}.png`;
+    //imageDataArray[i].image_file = res.data[i].content;
+
+    // do something else here after firstFunction completes
+    let nftMetadata = generateMetadata(
+      imageDataArray[i].newDna,
+      imageDataArray[i].editionCount,
+      imageDataArray[i].attributesList,
+      imageDataArray[i].filePath
+    );
+    metadataList.push(nftMetadata);
+
+    const metaFile = new Moralis.File(filename, {
+      base64: Buffer.from(
+        JSON.stringify(metadataList.find((meta) => meta.edition == i))
+      ).toString("base64"),
+    });
+
+    // save locally as file
+    fs.writeFileSync(
+      `./output/${filename}`,
+      JSON.stringify(metadataList.find((meta) => meta.edition == i))
+    );
+
+    promiseArray.push(
+      new Promise((res, rej) => {
+        fs.readFile(`./output/${id}.json`, (err, data) => {
+          if (err) rej();
+          ipfsArray.push({
+            path: `metadata/${paddedHex}.json`,
+            content: data.toString("base64"),
+          });
+          res();
+        });
+      })
+    );
+  }
+  Promise.all(promiseArray).then(() => {
+    axios
+      .post(
+        "https://deep-index.moralis.io/api/v2/ipfs/uploadFolder",
+        ipfsArray,
+        {
+          headers: {
+            "X-API-Key": xAPIKey,
+            "content-type": "application/json",
+            accept: "application/json",
+          },
+        }
+      )
+      .then((res) => {
+        meta_CID = res.data[0].path.split("/")[4];
+        console.log("META FILE PATHS:", res.data);
+        saveToServer(meta_CID, image_CID);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+};
+
 // Create generative art by using the canvas api
 const startCreating = async () => {
   console.log("##################");
@@ -203,7 +319,7 @@ const startCreating = async () => {
     console.log("Mutating %d of %d", editionCount, editionSize);
 
     // upload to ipfs
-    const saveFileIPFS = async () => {
+    const saveFile = async () => {
       // get rarity from to config to create NFT as
       let rarity = getRarity(editionCount);
       console.log("- rarity: " + rarity);
@@ -259,85 +375,74 @@ const startCreating = async () => {
       // save locally as file
       fs.writeFileSync(`./output/${filename}`, canvas.toBuffer(filetype));
 
-      // save to hosted IPFS file
-      const file = new Moralis.File(filename, { base64: base64 });
-      const fileIpfs = await file.saveIPFS({ useMasterKey: true });
-
-      const filePath = file.ipfs();
-      const fileHash = file.hash();
-
-      const metadata = {
-        name: filename,
-        nftFilePath: filePath,
-        nftFileHash: fileHash,
-      };
-
-      console.log("Metadata: ", metadata);
-      console.log("File Path: ", filePath);
       console.log(
         "Mutant " + editionCount.toString() + " a resident of Moralis"
       );
 
-      const data = {
+      imageDataArray[editionCount] = {
         editionCount: editionCount,
-        filePath: filePath,
-        fileHash: fileHash,
         newDna: newDna,
         attributesList: attributesList,
-        file: file,
       };
-
-      return data;
-    };
-
-    // upload metadata
-    const uploadMetadata = async (_params) => {
-      // do something else here after firstFunction completes
-      let nftMetadata = generateMetadata(
-        _params.newDna,
-        _params.editionCount,
-        _params.attributesList,
-        _params.filePath
-      );
-      metadataList.push(nftMetadata);
-
-      const metaFile = new Moralis.File(editionCount.toString() + ".json", {
-        base64: Buffer.from(
-          JSON.stringify(
-            metadataList.find((meta) => meta.edition == _params.editionCount)
-          )
-        ).toString("base64"),
-      });
-
-      // save locally as file
-      fs.writeFileSync(
-        `./output/${editionCount}.json`,
-        JSON.stringify(
-          metadataList.find((meta) => meta.edition == editionCount)
-        )
-      );
-      // save to hosted IPFS file
-      let _metaFile = await metaFile.saveIPFS({ useMasterKey: true });
-
-      // Save file reference to Moralis
-      const FileDatabase = new Moralis.Object("Files");
-      FileDatabase.set("name", _params.editionCount.toString());
-      FileDatabase.set("path", _params.filePath);
-      FileDatabase.set("hash", _params.filePath);
-      FileDatabase.set("imagefile", _params.file);
-      FileDatabase.set("metafile", metaFile);
-      await FileDatabase.save();
     };
 
     const handleFinal = async () => {
-      const image = await saveFileIPFS();
-      await uploadMetadata(image);
+      // write image  files
+      const imageData = await saveFile();
     };
 
     await handleFinal();
     // iterate
     editionCount++;
   }
+
+  ipfsArray = [];
+  promiseArray = [];
+
+  for (let i = 1; i < editionCount; i++) {
+    let id = i.toString();
+    let paddedHex = (
+      "0000000000000000000000000000000000000000000000000000000000000000" + id
+    ).slice(-64);
+
+    promiseArray.push(
+      new Promise((res, rej) => {
+        fs.readFile(`./output/${id}.png`, (err, data) => {
+          if (err) rej();
+          ipfsArray.push({
+            path: `images/${paddedHex}.png`,
+            content: data.toString("base64"),
+          });
+          res();
+        });
+      })
+    );
+  }
+  Promise.all(promiseArray).then(() => {
+    axios
+      .post(
+        "https://deep-index.moralis.io/api/v2/ipfs/uploadFolder",
+        ipfsArray,
+        {
+          headers: {
+            "X-API-Key": xAPIKey,
+            "content-type": "application/json",
+            accept: "application/json",
+          },
+        }
+      )
+      .then((res) => {
+        console.log("IMAGE FILE PATHS:", res.data);
+        image_CID = res.data[0].path.split("/")[4];
+        console.log("IMAGE CID:", image_CID);
+        // pass folder CID to meta data
+        uploadMetadata(image_CID);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+
   writeMetaData(JSON.stringify(metadataList));
   console.log("#########################################");
   console.log("Welcome to Rekt City - Meet the Survivors");

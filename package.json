@@ -10,7 +10,9 @@
   "license": "ISC",
   "dependencies": {
     "all": "^0.0.0",
+    "axios": "^0.23.0",
     "canvas": "^2.8.0",
-    "moralis": "^0.0.104"
+    "moralis": "^0.0.104",
+    "request": "^2.88.2"
   }
 }
