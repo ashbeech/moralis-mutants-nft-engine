@@ -25,14 +25,15 @@ const appId = "YOUR_MORALIS_APP_ID";
 const serverUrl = "YOUR_MORALIS_SERVER_URL";
 const masterKey = "YOUR_MORALIS_MASTER_KEY"; // DO NOT DISPLAY IN PUBLIC DIR
 const xAPIKey = "YOUR_X_API_KEY"; // DO NOT DISPLAY IN PUBLIC DIR
+// xAPIKey available here: https://deep-index.moralis.io/api-docs/#/storage/uploadFolder
 const api_url = "https://deep-index.moralis.io/api/v2/ipfs/uploadFolder";
 
 Moralis.start({ serverUrl, appId, masterKey });
 
-// adds a signature to the top left corner of the canvas
+// adds a signature to the top left corner of the canvas for pre-production
 const signImage = (_sig) => {
   ctx.fillStyle = "#000000";
-  ctx.font = "bold 30pt Courier";
+  ctx.font = "bold 30pt Helvetica";
   ctx.textBaseline = "top";
   ctx.textAlign = "left";
   ctx.fillText(_sig, 40, 40);
