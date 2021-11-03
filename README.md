@@ -26,7 +26,7 @@ const appId = "YOUR_MORALIS_APP_ID";
 const serverUrl = "YOUR_MORALIS_SERVER_URL";
 const masterKey = "YOUR_MORALIS_MASTER_KEY"; // DO NOT DISPLAY IN PUBLIC DIR
 const xAPIKey = "YOUR_X_API_KEY"; // DO NOT DISPLAY IN PUBLIC DIR
-// xAPIKey available [🔑 here](https://deep-index.moralis.io/api-docs/#/storage/uploadFolder)
+// xAPIKey available here 🔑: https://deep-index.moralis.io/api-docs/#/storage/uploadFolder)
 
 ```
 
