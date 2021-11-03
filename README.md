@@ -6,7 +6,9 @@
 
 Aim: Save time and resources for artists and developers by allowing them to generate and host NFT art, across blockchains, in one place (utilising Moralis).
 
-This initial tutorial video is a great introduction: [Link to Moralis YouTube Video](https://www.youtube.com/watch?v=KBV4FrCv4ps).
+These tutorial videos are a great introduction.
+Part 1: [Link to Moralis YouTube Video](https://youtu.be/KBV4FrCv4ps)
+Part 2: [Link to Moralis YouTube Video](https://youtu.be/FcH7qXnOgzs)
 
 ## Quick Launch 🚀
 
@@ -23,6 +25,8 @@ Go to [Moralis.io](https://moralis.io/) to create your server instance. Then in 
 const appId = "YOUR_MORALIS_APP_ID";
 const serverUrl = "YOUR_MORALIS_SERVER_URL";
 const masterKey = "YOUR_MORALIS_MASTER_KEY"; // DO NOT DISPLAY IN PUBLIC DIR
+const xAPIKey = "YOUR_X_API_KEY"; // DO NOT DISPLAY IN PUBLIC DIR
+// xAPIKey available [🔑 here](https://deep-index.moralis.io/api-docs/#/storage/uploadFolder)
 
 ```
 
@@ -36,6 +40,18 @@ node index.js
 ```
 
 This injects the mutagen that will bring your Moralis mutants ALIVE!
+
+## Minting/On Chain ⛓
+
+Copy Solidity contract () to [⚙️ Remix IDE](https://remix.ethereum.org/) for test and deplyment, but first edit code to point to your meta data's IPFS folder 'metahash/CID'. You can get this, saved in dasboard of your Moralis server instance in row of 'metahash' column.
+
+```sh
+constructor()
+    ERC1155(
+        "ipfs://INSERT_YOUR_CID_METAHASH/metadata/{id}.json"
+    )
+{
+```
 
 ## Dependencies 🏗
 
