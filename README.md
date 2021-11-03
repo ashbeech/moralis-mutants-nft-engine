@@ -41,9 +41,9 @@ node index.js
 
 This injects the mutagen that will bring your Moralis mutants ALIVE!
 
-## Minting/On Chain ⛓
+## Minting ⛓
 
-Copy Solidity contract () to [⚙️ Remix IDE](https://remix.ethereum.org/) for test and deplyment, but first edit code to point to your meta data's IPFS folder 'metahash/CID'. You can get this, saved in dasboard of your Moralis server instance in row of 'metahash' column.
+Copy Solidity contract to [⚙️ Remix IDE](https://remix.ethereum.org/) for test and deplyment, but first edit code to point to your meta data's IPFS folder 'metahash/CID'. You can get this, saved in dasboard of your Moralis server instance in row of 'metahash' column.
 
 ```sh
 constructor()
@@ -61,7 +61,7 @@ constructor()
 
 ## Todos ✅
 
-- [ ] NFT contract allowing tokens to be minted and tranferred for Opensea.
+- [x] NFT contract allowing tokens to be minted and tranferred for Opensea.
 - [ ] Users can mint NFT collection via custom dapp frontend.
 - [ ] Compatibility across-chains (SOL/MATIC).
 - [ ] Much more TBA.
