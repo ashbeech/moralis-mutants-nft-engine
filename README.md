@@ -19,16 +19,9 @@ npm install
 
 ```
 
-Go to [Moralis.io](https://moralis.io/) to create your server instance. Then in root `index.js` file, point to your Moralis server:
+Go to [Moralis.io](https://moralis.io/) to create your server instance. Then rename .env-example file to .env and add your Moralis server credentials.
 
-```sh
-const appId = "YOUR_MORALIS_APP_ID";
-const serverUrl = "YOUR_MORALIS_SERVER_URL";
-const masterKey = "YOUR_MORALIS_MASTER_KEY"; // DO NOT DISPLAY IN PUBLIC DIR
-const xAPIKey = "YOUR_X_API_KEY"; // DO NOT DISPLAY IN PUBLIC DIR
-// xAPIKey available here 🔑: https://deep-index.moralis.io/api-docs/#/storage/uploadFolder)
-
-```
+_Note_: To find your xAPI key: https://deep-index.moralis.io/api-docs/#/storage/uploadFolder
 
 Create your layered artwork and split into folders in `./input` and configure your collection to match your layer structure and preferences accordingly by editing `./input/config.js`:
 
