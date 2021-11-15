@@ -11,12 +11,45 @@ const {
 } = require("./canvas");
 
 // import dna
-const { constructLayerToDna, isDnaUnique, createDna } = require("./dna");
+const { constructLayerToDna, createUniqueDna } = require("./dna");
 
 // import rarity
 const { createDnaListByRarity, getRarity } = require("./rarity");
 
-// create files and return image object array
+const constructLoadedElements = (
+  layers,
+  editionCount,
+  editionSize,
+  rarityWeights
+) => {
+  let dna = {
+    loadedElements: [],
+    newDna: null
+  };
+
+  // holds which dna has already been used during generation and prepares dnaList object
+  const dnaListByRarity = createDnaListByRarity(rarityWeights);
+
+  // get rarity from to config to create NFT as
+  let rarity = getRarity(editionCount, editionSize);
+
+  // create unique Dna
+  dna.newDna = createUniqueDna(layers, rarity, rarityWeights, dnaListByRarity);
+  dnaListByRarity[rarity].push(dna.newDna);
+
+  // propagate information about required layer contained within config into a mapping object
+  // = prepare for drawing
+  let results = constructLayerToDna(dna.newDna, layers, rarity);
+
+  // load all images to be used by canvas
+  results.forEach(layer => {
+    dna.loadedElements.push(loadLayerImg(layer));
+  });
+
+  return dna;
+};
+
+// create image files and return back image object array
 const createFile = async (
   canvas,
   ctx,
@@ -28,36 +61,16 @@ const createFile = async (
   rarityWeights,
   imageDataArray
 ) => {
-  // holds which dna has already been used during generation and prepares dnaList object
-  const dnaListByRarity = createDnaListByRarity(rarityWeights);
-
-  // get rarity from to config to create NFT as
-  let rarity = getRarity(editionCount, editionSize);
-  console.log("- rarity: " + rarity);
-
-  // calculate the NFT dna by getting a random part for each layer/feature
-  // based on the ones available for the given rarity to use during generation
-  let newDna = createDna(layers, rarity, rarityWeights);
-  while (!isDnaUnique(dnaListByRarity[rarity], newDna)) {
-    // recalculate dna as this has been used before.
-    console.log("found duplicate DNA " + newDna.join("-") + ", recalculate...");
-    newDna = createDna(layers, rarity, rarityWeights);
-  }
-  console.log("- dna: " + newDna.join("-"));
-
-  // propagate information about required layer contained within config into a mapping object
-  // = prepare for drawing
-  let results = constructLayerToDna(newDna, layers, rarity);
-  let loadedElements = [];
-
-  // load all images to be used by canvas
-  results.forEach(layer => {
-    loadedElements.push(loadLayerImg(layer));
-  });
+  const dna = constructLoadedElements(
+    layers,
+    editionCount,
+    editionSize,
+    rarityWeights
+  );
 
   let attributesList = [];
 
-  await Promise.all(loadedElements).then(elementArray => {
+  await Promise.all(dna.loadedElements).then(elementArray => {
     // create empty image
     ctx.clearRect(0, 0, width, height);
     // draw a random background color
@@ -78,8 +91,6 @@ const createFile = async (
     // write the image to the output directory
   });
 
-  dnaListByRarity[rarity].push(newDna);
-
   const base64ImgData = canvas.toBuffer();
   const base64 = base64ImgData.toString("base64");
 
@@ -93,7 +104,7 @@ const createFile = async (
 
   imageDataArray[editionCount] = {
     editionCount: editionCount,
-    newDna: newDna,
+    newDna: dna.newDna,
     attributesList: attributesList
   };
 

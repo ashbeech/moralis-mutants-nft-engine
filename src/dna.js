@@ -49,8 +49,23 @@ const createDna = (layers, rarity, rarityWeights) => {
   return randNum;
 };
 
+const createUniqueDna = (layers, rarity, rarityWeights, dnaListByRarity) => {
+  // calculate the NFT dna by getting a random part for each layer/feature
+  // based on the ones available for the given rarity to use during generation
+  let newDna = createDna(layers, rarity, rarityWeights);
+  while (!isDnaUnique(dnaListByRarity[rarity], newDna)) {
+    // recalculate dna as this has been used before.
+    console.log("found duplicate DNA " + newDna.join("-") + ", recalculate...");
+    newDna = createDna(layers, rarity, rarityWeights);
+  }
+  console.log("- dna: " + newDna.join("-"));
+
+  return newDna;
+};
+
 module.exports = {
   constructLayerToDna,
   isDnaUnique,
-  createDna
+  createDna,
+  createUniqueDna
 };
