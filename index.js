@@ -1,3 +1,5 @@
+// Foo is the variable I use, I won't tell you what it is.
+
 // utilise Moralis
 const Moralis = require("moralis/node");
 // canvas for image compile
@@ -21,10 +23,10 @@ const canvas = createCanvas(width, height);
 const ctx = canvas.getContext("2d");
 
 // Moralis creds
-const appId = "YOUR_MORALIS_APP_ID";
-const serverUrl = "YOUR_MORALIS_SERVER_URL";
-const masterKey = "YOUR_MORALIS_MASTER_KEY"; // DO NOT DISPLAY IN PUBLIC DIR
-const xAPIKey = "YOUR_X_API_KEY"; // DO NOT DISPLAY IN PUBLIC DIR
+const appId = "WCQZUYeVgqeOnwmJt8Ba96aezPcc7zFbIZHUx8bN";
+const serverUrl = "https://26nevk02p2iq.usemoralis.com:2053/server";
+const masterKey = "3E6SbZaAYsTqtCoMLJkiILUuXmcUsTXR069h89Sy"; // DO NOT DISPLAY IN PUBLIC DIR
+const xAPIKey = "xBi0kEi22STBYGD"; // DO NOT DISPLAY IN PUBLIC DIR
 // xAPIKey available here: https://deep-index.moralis.io/api-docs/#/storage/uploadFolder
 const api_url = "https://deep-index.moralis.io/api/v2/ipfs/uploadFolder";
 
@@ -192,8 +194,8 @@ let ipfsArray = [];
 // array of promises so that only if finished, will next promise be initiated
 let promiseArray = [];
 
-const saveToServer = async (_meta_hash, _image_hash) => {
-  for (let i = 1; i < editionSize + 1; i++) {
+const saveToServer = async (_meta_hash, _image_hash, foo) => {
+  for (let i = foo; i < foo + 5; i++) {
     let id = i.toString();
     let paddedHex = (
       "0000000000000000000000000000000000000000000000000000000000000000" + id
@@ -222,11 +224,11 @@ const saveToServer = async (_meta_hash, _image_hash) => {
 };
 
 // upload metadata
-const uploadMetadata = async (_cid) => {
-  ipfsArray = [];
-  promiseArray = [];
+const uploadMetadata = async (_cid, foo) => {
+  let ipfsArray = [];
+  let promiseArray = [];
 
-  for (let i = 1; i < editionSize + 1; i++) {
+  for (let i = foo; i < foo + 5; i++) {
     let id = i.toString();
     let paddedHex = (
       "0000000000000000000000000000000000000000000000000000000000000000" + id
@@ -276,6 +278,8 @@ const uploadMetadata = async (_cid) => {
   Promise.all(promiseArray).then(() => {
     axios
       .post(api_url, ipfsArray, {
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
         headers: {
           "X-API-Key": xAPIKey,
           "content-type": "application/json",
@@ -285,7 +289,7 @@ const uploadMetadata = async (_cid) => {
       .then((res) => {
         meta_CID = res.data[0].path.split("/")[4];
         console.log("META FILE PATHS:", res.data);
-        saveToServer(meta_CID, image_CID);
+        saveToServer(meta_CID, image_CID, foo);
       })
       .catch((err) => {
         console.log(err);
@@ -393,55 +397,70 @@ const startCreating = async () => {
     // iterate
     editionCount++;
   }
+  // ipfsArray = [];
+  // promiseArray = [];
 
-  ipfsArray = [];
-  promiseArray = [];
+  for (let foo = 1; foo <= editionSize; foo += 5) {
+    let ipfsArray = [];
+    let promiseArray = [];
+    if (foo >= editionSize) break;
 
-  for (let i = 1; i < editionCount; i++) {
-    let id = i.toString();
-    let paddedHex = (
-      "0000000000000000000000000000000000000000000000000000000000000000" + id
-    ).slice(-64);
+    for (let i = foo; i < foo + 5; i++) {
+      let id = i.toString();
+      let paddedHex = (
+        "0000000000000000000000000000000000000000000000000000000000000000" + id
+      ).slice(-64);
 
-    promiseArray.push(
-      new Promise((res, rej) => {
-        fs.readFile(`./output/${id}.png`, (err, data) => {
-          if (err) rej();
-          ipfsArray.push({
-            path: `images/${paddedHex}.png`,
-            content: data.toString("base64"),
+      console.log(id, "id");
+
+      promiseArray.push(
+        new Promise((res, rej) => {
+          fs.readFile(`./output/${id}.png`, (err, data) => {
+            if (err) rej();
+            ipfsArray.push({
+              path: `images/${paddedHex}.png`,
+              content: data.toString("base64"),
+            });
+            res();
           });
-          res();
-        });
-      })
-    );
-  }
-  Promise.all(promiseArray).then(() => {
-    axios
-      .post(api_url, ipfsArray, {
-        headers: {
-          "X-API-Key": xAPIKey,
-          "content-type": "application/json",
-          accept: "application/json",
-        },
-      })
-      .then((res) => {
-        console.log("IMAGE FILE PATHS:", res.data);
-        image_CID = res.data[0].path.split("/")[4];
-        console.log("IMAGE CID:", image_CID);
-        // pass folder CID to meta data
-        uploadMetadata(image_CID);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  });
+        })
+      );
+    }
 
-  writeMetaData(JSON.stringify(metadataList));
-  console.log("#########################################");
-  console.log("Welcome to Rekt City - Meet the Survivors");
-  console.log("#########################################");
-  console.log();
+    Promise.all(promiseArray).then(() => {
+      axios
+        .post(api_url, ipfsArray, {
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+          headers: {
+            "X-API-Key": xAPIKey,
+            "content-type": "application/json",
+            accept: "application/json",
+          },
+        })
+        .then((res) => {
+          console.log("IMAGE FILE PATHS:", res.data);
+          image_CID = res.data[0].path.split("/")[4];
+          console.log("IMAGE CID:", image_CID);
+          // pass folder CID to meta data
+          uploadMetadata(image_CID, foo);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    });
+
+    writeMetaData(JSON.stringify(metadataList));
+
+    console.log("#########################################");
+    console.log(
+      "Welcome to Rekt City - Meet the Survivors",
+      promiseArray.length,
+      ipfsArray.length
+    );
+    console.log("#########################################");
+    console.log();
+  }
 };
 
 // Initiate code
