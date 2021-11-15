@@ -100,8 +100,8 @@ const createFile = async (
   return imageDataArray;
 };
 
-// upload to ipfs
-const saveToIPFS = async (metaHash, imageHash, editionSize) => {
+// upload to database
+const saveToDb = async (metaHash, imageHash, editionSize) => {
   for (let i = 1; i < editionSize + 1; i++) {
     let id = i.toString();
     let paddedHex = (
@@ -133,5 +133,5 @@ const saveToIPFS = async (metaHash, imageHash, editionSize) => {
 
 module.exports = {
   createFile,
-  saveToIPFS
+  saveToDb
 };

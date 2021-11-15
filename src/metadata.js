@@ -1,11 +1,11 @@
 const fs = require("fs");
 const Moralis = require("moralis/node");
 const { default: axios } = require("axios");
-const { saveToIPFS } = require("./filesystem");
+const { saveToDb } = require("./filesystem");
 
 const { description, baseImageUri } = require("../input/config.js");
 
-// write metadata to json files
+// write metadata locally to json files
 const writeMetaData = metadataList => {
   fs.writeFileSync("./output/_metadata.json", JSON.stringify(metadataList));
 };
@@ -100,7 +100,7 @@ const uploadMetadata = async (
       .then(res => {
         let metaCID = res.data[0].path.split("/")[4];
         console.log("META FILE PATHS:", res.data);
-        saveToIPFS(metaCID, imageCID, editionSize);
+        saveToDb(metaCID, imageCID, editionSize);
         writeMetaData(metadataList);
       })
       .catch(err => {
