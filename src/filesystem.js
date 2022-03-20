@@ -87,7 +87,7 @@ const createFile = async (
       });
     });
     // add an image signature as the edition count to the top left of the image
-    signImage(ctx, `#${editionCount}`);
+    signImage(ctx, `bananas!`);
     // write the image to the output directory
   });
 
