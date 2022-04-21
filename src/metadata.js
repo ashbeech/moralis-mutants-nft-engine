@@ -6,7 +6,7 @@ const { saveToDb } = require("./filesystem");
 const { description, baseImageUri } = require("../input/config.js");
 
 // write metadata locally to json files
-const writeMetaData = metadataList => {
+const writeMetaData = (metadataList) => {
   fs.writeFileSync("./output/_metadata.json", JSON.stringify(metadataList));
 };
 
@@ -20,7 +20,7 @@ const generateMetadata = (dna, edition, attributesList, path) => {
     image: path || baseImageUri,
     edition: edition,
     date: dateTime,
-    attributes: attributesList
+    attributes: attributesList,
   };
   return tempMetadata;
 };
@@ -62,14 +62,14 @@ const uploadMetadata = async (
     // upload metafile data to Moralis
     const metaFile = new Moralis.File(filename, {
       base64: Buffer.from(
-        JSON.stringify(metadataList.find(meta => meta.edition == i))
-      ).toString("base64")
+        JSON.stringify(metadataList.find((meta) => meta.edition == i))
+      ).toString("base64"),
     });
 
     // save locally as file
     fs.writeFileSync(
       `./output/${filename}`,
-      JSON.stringify(metadataList.find(meta => meta.edition == i))
+      JSON.stringify(metadataList.find((meta) => meta.edition == i))
     );
 
     // reads output folder for json files and then adds to IPFS object array
@@ -79,7 +79,7 @@ const uploadMetadata = async (
           if (err) rej();
           ipfsArray.push({
             path: `metadata/${paddedHex}.json`,
-            content: data.toString("base64")
+            content: data.toString("base64"),
           });
           res();
         });
@@ -91,19 +91,21 @@ const uploadMetadata = async (
   Promise.all(promiseArray).then(() => {
     axios
       .post(apiUrl, ipfsArray, {
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
         headers: {
           "X-API-Key": xAPIKey,
           "content-type": "application/json",
-          accept: "application/json"
-        }
+          accept: "application/json",
+        },
       })
-      .then(res => {
+      .then((res) => {
         let metaCID = res.data[0].path.split("/")[4];
         console.log("META FILE PATHS:", res.data);
         saveToDb(metaCID, imageCID, editionSize);
         writeMetaData(metadataList);
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
       });
   });
@@ -133,7 +135,7 @@ const compileMetadata = async (
           if (err) rej();
           ipfsArray.push({
             path: `images/${paddedHex}.png`,
-            content: data.toString("base64")
+            content: data.toString("base64"),
           });
           res();
         });
@@ -145,20 +147,22 @@ const compileMetadata = async (
   Promise.all(promiseArray).then(() => {
     axios
       .post(apiUrl, ipfsArray, {
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
         headers: {
           "X-API-Key": xAPIKey,
           "content-type": "application/json",
-          accept: "application/json"
-        }
+          accept: "application/json",
+        },
       })
-      .then(res => {
+      .then((res) => {
         console.log("IMAGE FILE PATHS:", res.data);
         let imageCID = res.data[0].path.split("/")[4];
         console.log("IMAGE CID:", imageCID);
         // pass folder CID to meta data
         uploadMetadata(apiUrl, xAPIKey, imageCID, editionSize, imageDataArray);
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
       });
   });
@@ -168,5 +172,5 @@ module.exports = {
   generateMetadata,
   writeMetaData,
   uploadMetadata,
-  compileMetadata
+  compileMetadata,
 };
